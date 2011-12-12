@@ -29,9 +29,9 @@ public class TorrentFileProcessor {
         int segSize;
         if(f.length()<=5*1024*1024) //if less than 5MB transfer as whole
             segSize =5*1024*1024;
-        else if(f.length()<=1024*1024*1024) //if less than 1GB trasfer as segments of 512kb each
+        else if(f.length()<=1024*1024*1024) //if less than 1GB trasfer as segments of 10mb each
                 segSize =10*1024*1024;
-        else segSize = 20*1024*1024; // else transfer as segments of 4Mb each;
+        else segSize = 20*1024*1024; // else transfer as segments of 20Mb each;
 
         int tot = (int)Math.ceil((double)f.length()/segSize);
         for(long i=0;i<tot-1;i++)

@@ -59,7 +59,7 @@ class FileSender extends Thread{
         if(Server.mark)
             return;
         synchronized(pool){
-            while(pool.isEmpty()){
+            while(!pool.isEmpty()){
                 try{
                     this.wait();
                 }catch(InterruptedException e){
@@ -76,7 +76,7 @@ class FileSender extends Thread{
 
             req = (DownloadRequest) oin.readObject();
             if(Server.map.get(req.fileName)==null || !Server.map.get(req.fileName).get(req.rangeIndex).has){ //if the file not found or the segment not found
-                oout.writeObject("NOT_FOUND!!");
+                oout.writeObject("NOT_FOUND");
                 oout.flush();
             }else{
                 int size = (int)(Server.map.get(req.fileName).get(req.rangeIndex).to-Server.map.get(req.fileName).get(req.rangeIndex).from+1);
