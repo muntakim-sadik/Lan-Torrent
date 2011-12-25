@@ -16,7 +16,10 @@ public class Tracker {
     ServerSocket server;
     Socket sock;
     final int PORT = 10000;
-   
+
+//    public static void main(String args[]){
+//        runTracker();
+//    }
     public void runTracker(){
         try{
             server = new ServerSocket(PORT,100);

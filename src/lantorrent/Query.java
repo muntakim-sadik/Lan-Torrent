@@ -1,12 +1,18 @@
 package lantorrent;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.sql.*;
 
-class Range{
+class Range implements Serializable{
     long from,to;
     boolean has;
+    Range(long f, long t, boolean x){
+        from=f;
+        to=t;
+        has = x;
+    }
     Range(long f,long t){
         from=f;
         to=t;
@@ -19,11 +25,12 @@ class Range{
     }
 }
 
-class QueryData{
+class QueryData implements Serializable{
 	String ip;
 	int port;
 	ArrayList<Range> segments;
 	QueryData(String i,int p,ArrayList<Range> r){
+                super();
 		ip=i;
 		port =p;
 		segments=r;
@@ -43,7 +50,7 @@ public class Query {
     ArrayList<Range> postprocess(String s){
         ArrayList<Range> l=new ArrayList<Range>();
         int from=0;
-        String ss[]=s.split(",");
+        String ss[]=s.split(", ");
         
        for(int i=0;i<ss.length;i++){
             ss[i]=ss[i].trim();
@@ -105,7 +112,7 @@ public class Query {
 	public static void main(String[] args){
 		Query q = null;
 		try {
-			q=new Query("file.pdf");
+			q=new Query("eclipse.zip");
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -115,6 +122,7 @@ public class Query {
 		}
 		
 		ArrayList<QueryData> data=q.get();
+                System.out.println(data.size());
 		for(QueryData qd:data){
 			System.out.print(qd.ip+" "+qd.port+" ");
 			for(int i=0;i<qd.segments.size();i++){

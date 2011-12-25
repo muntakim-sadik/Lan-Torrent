@@ -16,7 +16,38 @@ public class Update {
 	private static final String dbClassName = "com.mysql.jdbc.Driver";
 	private static final String CONNECTION = "jdbc:mysql://127.0.0.1/LanTorrent";
 
-	Update(String ip, int port, String fileName, ArrayList<Range> r)
+        Update(){
+            
+        }
+        void Insert(String ip,int port,String fileName,String r)
+        throws ClassNotFoundException, SQLException {
+            try {
+			Class.forName(dbClassName);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		Properties properties = new Properties();
+		properties.put("user", "root");
+		properties.put("password", "s");
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(CONNECTION, properties);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Statement st = connection.createStatement();
+		//st = connection.createStatement();
+		
+		st.executeUpdate("INSERT INTO `LanTorrent`.`data` (`ID`, `IP`, `PORT`, `NAME`, `DOWNLOADED`) VALUES (NULL, '"+ip+"','"+port+"', '"+fileName+"', '"+r+"');");
+       
+        //        st.executeUpdate("INSERT INTO `LanTorrent`.`data` (`ID`, `IP`, `PORT`, `NAME`, `DOWNLOADED`) VALUES (NULL, '12', '12', '12', '12');");
+        
+        }
+        
+	Update(String ip, int port, String fileName, ArrayList<lantorrent.Range> r)
 			throws ClassNotFoundException, SQLException {
 		try {
 			Class.forName(dbClassName);
@@ -76,7 +107,9 @@ public class Update {
 				//System.out.println(qd.segments.get(i).to);
 			}
 			try {
-				Update up=new Update(qd.ip,qd.port,"file.pdf",qd.segments);
+				//Update up=new Update(qd.ip,qd.port,"file.pdf",qd.segments);
+                            Update u=new Update();
+                            u.Insert("localhost", 999,"file","amararoro");
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

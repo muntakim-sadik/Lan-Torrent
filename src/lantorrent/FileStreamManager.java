@@ -1,5 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
+// * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -9,9 +9,17 @@ import java.io.*;
 import java.util.*;
 
 public class FileStreamManager {
+    public static void main(String[] a){
+        byte[] b=new byte[1024*1024];
+        
+//        writeToFile(getStream("file.pdf"),b,1024*1024,0);
+    }
+            
+    
     static HashMap<String,RandomAccessFile> map = new HashMap();
     
     synchronized static RandomAccessFile getStream(String s){
+        
         RandomAccessFile f = map.get(s);
         if(f==null){
             try{
@@ -24,27 +32,39 @@ public class FileStreamManager {
         
         return f;
     }
+     synchronized static RandomAccessFile getStream(String s,boolean x){
+         return getStream("ff.mp4");
+     }
 
-    static void writeToFile(RandomAccessFile rf,byte[] ary, int length, long startPos){
+    static void writeToFile(RandomAccessFile rf,FileSendingFormat ff){
         synchronized(rf){
             try{
-                rf.write(ary,(int)startPos,length);
+                System.out.println(">>>>>"+ff.length+" >>>"+ff.ary.length);
+                rf.seek(ff.from);
+                rf.write(ff.ary,0,ff.length);
+//                System.out.append(" "+)
             }catch(IOException e){
                 e.printStackTrace();
+            }catch(NullPointerException n){
+                n.printStackTrace();
             }
+//            System.out.println("rf "+rf.getFilePointer()+)
         }
     }
 
-    static int readFromFile(RandomAccessFile rf,byte[] ary,long startPos){
+    static FileSendingFormat readFromFile(RandomAccessFile rf,byte[] ary,long startPos){
         int bytes=0;
         synchronized(rf){
             try{
                 rf.seek(startPos);
-                bytes = rf.read(ary);
+                bytes = rf.read(ary,0,ary.length);
+                System.out.println(">>>"+rf.getFilePointer()+" ff "+(startPos+bytes));
             }catch(IOException e){
                 e.printStackTrace();
             }
         }
-        return bytes;
+        return new FileSendingFormat(ary,startPos,bytes);
     }
+    
+    
 }

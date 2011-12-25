@@ -10,67 +10,78 @@ package lantorrent;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class TorrentFileProcessor {
     FileStructure struct;
     File f;
-    String defaultTrackerIP="localhost";
+    String defaultTrackerIP="127.0.0.1";
     int defaultTrackerPort = 10000;
 
-    TorrentFileProcessor(String s){
-        f = new File(s);
+    TorrentFileProcessor(File ff,String ip, int port){
+        f = ff;
+        defaultTrackerIP = ip;
+        defaultTrackerPort = port;
     }
 
-    /// here argument f is the File instance to save the torrent file
-    void makeTorrentFile(File f) throws IOException{
-        ObjectOutputStream oout = new ObjectOutputStream(new FileOutputStream(f));
-        ArrayList<Range> x = new ArrayList();
-        int segSize;
-        if(f.length()<=5*1024*1024) //if less than 5MB transfer as whole
-            segSize =5*1024*1024;
-        else if(f.length()<=1024*1024*1024) //if less than 1GB trasfer as segments of 10mb each
-                segSize =10*1024*1024;
-        else segSize = 20*1024*1024; // else transfer as segments of 20Mb each;
-
-        int tot = (int)Math.ceil((double)f.length()/segSize);
-        for(long i=0;i<tot-1;i++)
-            x.add(new Range(i,(i+1)*segSize-1));
-        if(!(f.length()%tot==0))
-            x.add(new Range(x.get(x.size()).to+1,f.length()));
-
-        struct = new FileStructure(f.getName(),f.length(),tot,segSize,x,defaultTrackerIP,defaultTrackerPort);
-
-        oout.writeObject(struct);
-        oout.close();
+    /// here argument p is the File instance to save the torrent file
+    void makeTorrentFile(File p ) {
+        ObjectOutputStream oout = null;
+        try {
+            oout = new ObjectOutputStream(new FileOutputStream(p));
+            ArrayList<Range> x = new ArrayList();
+            int segSize;
+            if(f.length()<=5*1024*1024) //if less than 5MB transfer as whole
+                segSize =(int)f.length();
+            else if(f.length()<=1024*1024*1024) //if less than 1GB trasfer as segments of 10mb each
+                    segSize =10*1024*1024;
+            else segSize = 20*1024*1024; // else transfer as segments of 20Mb each;
+            int tot = (int)Math.ceil((double)f.length()/segSize);
+            if(tot==0) tot=1;
+            long prev =0;
+            for(long i=0;i<tot-1;i++){
+                x.add(new Range(prev,(i+1)*segSize-1));
+                prev = (i+1)*segSize;
+            }
+            if(!(f.length()%tot==0))
+                x.add(new Range(x.get(x.size()-1).to+1,f.length()));
+            struct = new FileStructure(f.getName(),f.length(),tot,segSize,x,defaultTrackerIP,defaultTrackerPort);
+            oout.writeObject(struct);
+            System.out.println("trnt prcr "+struct.totalSegments+" "+f.exists()+" "+segSize);
+            oout.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+//            Logger.getLogger(TorrentFileProcessor.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                oout.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+//                Logger.getLogger(TorrentFileProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     /* return the list of segments of the file initialized with "has" signal marked as false*/
-    FileStructure process() throws IOException,ClassNotFoundException {
-        ObjectInputStream oin = new ObjectInputStream(new FileInputStream(f));
-        struct = (FileStructure)oin.readObject();
-
-        return struct;
+     static FileStructure process(File p) {
+         FileStructure struc=null;
+        try {
+            ObjectInputStream oin = new ObjectInputStream(new FileInputStream(p));
+            struc = (FileStructure)oin.readObject();
+            System.out.println("trnt prcr prcs "+struc.segmentList.size());
+            oin.close();
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+//            Logger.getLogger(TorrentFileProcessor.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+//            Logger.getLogger(TorrentFileProcessor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return struc;
     }
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class FileStructure implements Serializable{
-    String fileName;
-    long fileSize; ///in bytes
-    int totalSegments;
-    int segmentSize;
-    String trackerIP;
-    int trackerPort;
-    ArrayList<Range> segmentList;
-    FileStructure(String s, long l, int i1, int i2,ArrayList<Range> r,String s2, int p){
-        fileName = s;
-        fileSize = l;
-        totalSegments = i1;
-        segmentSize = i2;
-        segmentList = r;
-        trackerIP = s2;
-        trackerPort = p;
-    }
-}
